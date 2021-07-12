@@ -7,11 +7,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="dw-chart" />
-        <module name="gmall-canal" />
-        <module name="gmall-common" />
-        <module name="gmall-realtime" />
+        <module name="es-demo" />
         <module name="dw-publisher" />
+        <module name="gmall-common" />
+        <module name="dw-chart" />
+        <module name="gmall-realtime" />
+        <module name="gmall-canal" />
       </profile>
     </annotationProcessing>
   </component>

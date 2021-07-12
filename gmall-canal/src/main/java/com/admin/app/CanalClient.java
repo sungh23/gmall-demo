@@ -81,23 +81,38 @@ public class CanalClient {
      * @param eventType
      */
     private static void handle(String tableName, List<CanalEntry.RowData> rowDatasList, CanalEntry.EventType eventType) {
-        //筛选数据 (对order_info 表插入数据操作 )
+        //筛选数据 (对order_info 表插入数据操作 )  订单和订单详情表只需要关注新增数据即可
         if ("order_info".equals(tableName) && CanalEntry.EventType.INSERT.equals(eventType)) {
-            // 获取每一条数据
-            for (CanalEntry.RowData rowData : rowDatasList) {
-                // 获取修改之后的数据
-                List<CanalEntry.Column> afterColumnsList = rowData.getAfterColumnsList();
-                // 获取每一条数据
-                JSONObject json = new JSONObject();
-                for (CanalEntry.Column column : afterColumnsList) {
-                    json.put(column.getName(),column.getValue());
-                }
-                System.out.println(json.toJSONString());
-                MyKafkaSender.send(GmallConstants.KAFKA_TOPIC_ORDER,json.toJSONString());
-            }
+            sendKafkaData(rowDatasList, GmallConstants.KAFKA_TOPIC_ORDER);
 
+        }else if ("order_detail".equals(tableName) && CanalEntry.EventType.INSERT.equals(eventType)){
+            // 获取每一条数据
+            sendKafkaData(rowDatasList, GmallConstants.KAFKA_TOPIC_ORDER_DETAIL);
+
+            // 用户表需要关注新增和变化的内容
+        }else if ("user_info".equals(tableName) &&(CanalEntry.EventType.INSERT.equals(eventType)||CanalEntry.EventType.UPDATE.equals(eventType))){
+            sendKafkaData(rowDatasList,GmallConstants.KAFKA_TOPIC_USER);
         }
 
+    }
 
+    /**
+     *  发送数据到kafka队列
+     * @param rowDatasList
+     * @param kafkaTopicOrder
+     */
+    private static void sendKafkaData(List<CanalEntry.RowData> rowDatasList, String kafkaTopicOrder) {
+        // 获取每一条数据
+        for (CanalEntry.RowData rowData : rowDatasList) {
+            // 获取修改之后的数据
+            List<CanalEntry.Column> afterColumnsList = rowData.getAfterColumnsList();
+            // 获取每一条数据
+            JSONObject json = new JSONObject();
+            for (CanalEntry.Column column : afterColumnsList) {
+                json.put(column.getName(), column.getValue());
+            }
+            System.out.println(json.toJSONString());
+            MyKafkaSender.send(kafkaTopicOrder, json.toJSONString());
+        }
     }
 }
